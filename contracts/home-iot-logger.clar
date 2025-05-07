@@ -64,15 +64,6 @@
   (is-some (map-get? nest-nodes owner))
 )
 
-;; Adds a device to the owner's device list
-(define-private (add-device-to-owner-list (owner principal) (device-id (string-ascii 64)))
-  (let (
-    (current-devices (default-to (list) (map-get? owner-devices owner)))
-  )
-    (map-set owner-devices owner (append current-devices device-id))
-  )
-)
-
 ;; Validates if a device is registered to the owner
 (define-private (is-device-registered (owner principal) (device-id (string-ascii 64)))
   (is-some (map-get? devices {owner: owner, device-id: device-id}))
@@ -91,36 +82,6 @@
       nest-node-id: nest-node-id,
       registration-time: block-height
     })
-    
-    (ok true)
-  )
-)
-
-;; Registers a new IoT device to the homeowner's network
-(define-public (register-device 
-    (device-id (string-ascii 64))
-    (device-name (string-ascii 64))
-    (device-type (string-ascii 32)))
-  (let (
-    (caller tx-sender)
-  )
-    ;; Check that caller has a registered NestNode
-    (asserts! (is-nest-node-owner caller) ERR-NEST-NODE-NOT-REGISTERED)
-    ;; Check that device isn't already registered
-    (asserts! (not (is-device-registered caller device-id)) ERR-DEVICE-ALREADY-REGISTERED)
-    
-    ;; Register the device
-    (map-set devices 
-      {owner: caller, device-id: device-id}
-      {
-        device-name: device-name,
-        device-type: device-type,
-        registration-time: block-height
-      }
-    )
-    
-    ;; Add device to owner's device list
-    (add-device-to-owner-list caller device-id)
     
     (ok true)
   )
